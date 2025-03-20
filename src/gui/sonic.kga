@@ -1,0 +1,151 @@
+write COLOR_CYAN to DISPLAY_BACKGROUND
+write OP_SET_BACKGROUND_COLOR to REG_OP
+cpu_exec
+
+write "cccccccccccccccccccccccccccccccc" to 207
+write "cccccccccccccccccccccccccccccccc" to 208
+write "cccccccccccccccccccccccccccccccc" to 209
+write "cccccccccccccccccccccccccccccccc" to 210
+write "cccccBBBBBBBBBBBBwwwBBcccccccccc" to 211
+write "ccccBbbbbbbbbbbbbBBBbBcccccccccc" to 212
+write "cccccBbbbBybbbbbbbbbbBcccccccccc" to 213
+write "ccccccBbbByybbbbbbbbbBcccccccccc" to 214
+write "cccccccBbBybbbbbbbbbbbBccccccccc" to 215
+write "ccccccBbbbbbbbbwwwbbbbBccccccccc" to 216
+write "cccccBbbbbbbbbwwwwwbbbBccccccccc" to 217
+write "ccccBbbbbbbbbbwwwwBbwBcccccccccc" to 218
+write "cccBBBBBBbbbbbwwwwBbwBcccccccccc" to 219
+write "cccccccBbbbbbbbwwwBwBBBccccccccc" to 220
+write "ccccccBbbbbbyyywwwwyyBcccccccccc" to 221
+write "cccccBbbbbbbyyyyyyyyyBcccccccccc" to 222
+write "ccccBBBBBBBBByyyyyyyBccccccccccc" to 223
+write "cccccccccccByBBBBBBBBccccccccccc" to 224
+write "ccccccccccByBBbyyyBBBBcccccccccc" to 225
+write "cccccccccByBwwByyyBwwBcccccccccc" to 226
+write "ccccccccBBwwwwByyBwwBccccccccccc" to 227
+write "cccccccccBwwwwBByBwBcccccccccccc" to 228
+write "ccccccccccBwwBBbBBBBcccccccccccc" to 229
+write "cccccccccccBBbBBBccccccccccccccc" to 230
+write "cccccccccccBBbBrrBBccccccccccccc" to 231
+write "ccccccccccBBrrBBrrwBBccccccccccc" to 232
+write "ccccccccccBrrrwrBBrrrBcccccccccc" to 233
+write "ccccccccccBrrwrrrrBrrrBccccccccc" to 234
+write "ccccccccccBBBBBBBBBBBBBccccccccc" to 235
+write "cwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwc" to 236
+write "cccccccccccccccccccccccccccccccc" to 237
+write "cccccccccccccccccccccccccccccccc" to 238
+write "cccccccccccccccccccccccccccccccc" to 239
+write "cccccccccccccccccccccccccccccccc" to 240
+
+var a
+write "a" to var:a
+
+var d
+write "d" to var:d
+
+var q
+write "q" to var:q
+
+var empty
+write "" to var:empty 
+
+var counter
+var parsed_command
+
+label start
+
+    write 207 to REG_A
+    write 240 to REG_B
+    write OP_RENDER_BITMAP to REG_OP
+    cpu_exec
+    jump label:read_input
+
+
+label read_input 
+
+    write 211 to var:counter
+
+    write OP_READ_INPUT to REG_OP
+    write KEYBOARD_READ_CHAR_SILENTLY to REG_A
+    cpu_exec
+
+    copy KEYBOARD_BUFFER to var:parsed_command
+    copy var:parsed_command to REG_A
+    copy var:a to REG_B
+    write OP_CMP_EQ to REG_OP
+    cpu_exec
+    jump_if label:left_shift
+
+    copy KEYBOARD_BUFFER to var:parsed_command
+    copy var:parsed_command to REG_A
+    copy var:d to REG_B
+    write OP_CMP_EQ to REG_OP
+    cpu_exec
+    jump_if label:right_shift
+
+    copy KEYBOARD_BUFFER to var:parsed_command
+    copy var:parsed_command to REG_A
+    copy var:q to REG_B
+    write OP_CMP_EQ to REG_OP
+    cpu_exec
+    jump_if label:exit
+
+    jump label:read_input
+
+label left_shift 
+
+    copy *var:counter to REG_A
+    write 1 to REG_B
+    copy var:empty to REG_C
+    copy var:empty to REG_D
+    write OP_REPLACE_COLUMN to REG_OP
+    cpu_exec
+    copy REG_RES to *var:counter
+
+    copy var:counter to REG_A
+    write OP_INCR to REG_OP
+    cpu_exec
+    copy REG_RES to var:counter
+
+    copy var:counter to REG_A
+    write 237 to REG_B
+    write OP_CMP_LT to REG_OP
+    cpu_exec
+    jump_if label:left_shift
+
+    write 207 to REG_A
+    write 240 to REG_B
+    write OP_RENDER_BITMAP to REG_OP
+    cpu_exec
+    jump label:read_input      
+
+label right_shift
+
+    write "c" to REG_A
+    copy *var:counter to REG_B
+    write "" to REG_C
+    write OP_CONCAT_WITH to REG_OP
+    cpu_exec
+    copy REG_RES to *var:counter
+
+    copy var:counter to REG_A
+    write OP_INCR to REG_OP
+    cpu_exec
+    copy REG_RES to var:counter
+
+    copy var:counter to REG_A
+    write 237 to REG_B
+    write OP_CMP_LT to REG_OP
+    cpu_exec
+    jump_if label:right_shift
+
+    write 207 to REG_A
+    write 240 to REG_B
+    write OP_RENDER_BITMAP to REG_OP
+    cpu_exec
+    jump label:read_input        
+
+label exit
+
+    write OP_HALT to REG_OP
+    cpu_exec
